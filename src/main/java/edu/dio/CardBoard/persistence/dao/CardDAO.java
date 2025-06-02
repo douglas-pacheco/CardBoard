@@ -3,7 +3,11 @@ package edu.dio.CardBoard.persistence.dao;
 import edu.dio.CardBoard.dto.CardDetailsDTO;
 import edu.dio.CardBoard.persistence.entity.CardEntity;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -11,10 +15,18 @@ import java.util.Optional;
 import static edu.dio.CardBoard.persistence.converter.OffsetDateTimeConverter.toOffsetDateTime;
 import static java.util.Objects.nonNull;
 
-@AllArgsConstructor
+@Component
 public class CardDAO {
 
-    private Connection connection;
+    private final DataSource dataSource;
+    @Getter
+    private final Connection connection;
+
+    @Autowired
+    public CardDAO(DataSource dataSource) throws SQLException {
+        this.dataSource = dataSource;
+        this.connection = dataSource.getConnection();
+    }
 
     public CardEntity insert(final CardEntity entity) throws SQLException {
         var sql = "INSERT INTO CARDS (title, description, board_column_id) values (?, ?, ?);";

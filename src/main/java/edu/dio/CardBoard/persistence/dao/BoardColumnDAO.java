@@ -3,8 +3,12 @@ package edu.dio.CardBoard.persistence.dao;
 import edu.dio.CardBoard.dto.BoardColumnDTO;
 import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
 import edu.dio.CardBoard.persistence.entity.CardEntity;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,10 +18,20 @@ import java.util.Optional;
 import static edu.dio.CardBoard.persistence.entity.BoardColumnKindEnum.findByName;
 import static java.util.Objects.isNull;
 
-@RequiredArgsConstructor
+@Component
 public class BoardColumnDAO {
 
+    private final DataSource dataSource;
+    @Getter
     private final Connection connection;
+
+    @Autowired
+    public BoardColumnDAO(DataSource dataSource) throws SQLException {
+        this.dataSource = dataSource;
+        this.connection = dataSource.getConnection();
+    }
+
+
 
     public BoardColumnEntity insert(final BoardColumnEntity entity) throws SQLException {
         var sql = "INSERT INTO BOARDS_COLUMNS (name, `order`, kind, board_id) VALUES (?, ?, ?, ?);";

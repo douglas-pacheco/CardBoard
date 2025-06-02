@@ -3,18 +3,24 @@ package edu.dio.CardBoard.service;
 import edu.dio.CardBoard.persistence.dao.BoardColumnDAO;
 import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
-@AllArgsConstructor
+@Component
 public class BoardColumnQueryService {
 
-    private final Connection connection;
+    private final BoardColumnDAO dao;
+
+    public BoardColumnQueryService(BoardColumnDAO dao) throws SQLException {
+        this.dao = dao;
+
+    }
 
     public Optional<BoardColumnEntity> findById(final Long id) throws SQLException {
-        var dao = new BoardColumnDAO(connection);
         return dao.findById(id);
     }
 

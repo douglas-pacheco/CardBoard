@@ -2,15 +2,27 @@ package edu.dio.CardBoard.persistence.dao;
 
 import edu.dio.CardBoard.persistence.entity.BoardEntity;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
-@AllArgsConstructor
+@Component
 public class BoardDAO {
 
-    private Connection connection;
+    private final DataSource dataSource;
+    @Getter
+    private final Connection connection;
+
+    @Autowired
+    public BoardDAO(DataSource dataSource) throws SQLException {
+        this.dataSource = dataSource;
+        this.connection = dataSource.getConnection();
+    }
 
     public BoardEntity insert(final BoardEntity entity) throws SQLException {
         var sql = "INSERT INTO BOARDS (name) values (?);";

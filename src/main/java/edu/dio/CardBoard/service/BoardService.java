@@ -4,20 +4,28 @@ import edu.dio.CardBoard.persistence.dao.BoardColumnDAO;
 import edu.dio.CardBoard.persistence.dao.BoardDAO;
 import edu.dio.CardBoard.persistence.entity.BoardEntity;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@AllArgsConstructor
+@Component
 public class BoardService {
 
-    private final Connection connection;
+    private final BoardDAO boardDAO;
+    private final BoardColumnDAO boardColumnDAO;
+
+
+    @Autowired
+    public BoardService(BoardDAO dao, BoardColumnDAO boardColumnDAO) {
+        this.boardDAO = dao;
+        this.boardColumnDAO = boardColumnDAO;
+    }
 
     public BoardEntity insert(final BoardEntity entity) throws SQLException {
-        var dao = new BoardDAO(connection);
-        var boardColumnDAO = new BoardColumnDAO(connection);
         try{
-            dao.insert(entity);
+            boardDAO.insert(entity);
             var columns = entity.getBoardColumns().stream().map(c -> {
                 c.setBoard(entity);
                 return c;
@@ -25,25 +33,24 @@ public class BoardService {
             for (var column :  columns){
                 boardColumnDAO.insert(column);
             }
-            connection.commit();
+            boardColumnDAO.getConnection().commit();
         } catch (SQLException e) {
-            connection.rollback();
+            boardColumnDAO.getConnection().rollback();
             throw e;
         }
         return entity;
     }
 
     public boolean delete(final Long id) throws SQLException {
-        var dao = new BoardDAO(connection);
         try{
-            if (!dao.exists(id)) {
+            if (!boardDAO.exists(id)) {
                 return false;
             }
-            dao.delete(id);
-            connection.commit();
+            boardDAO.delete(id);
+            boardDAO.getConnection().commit();
             return true;
         } catch (SQLException e) {
-            connection.rollback();
+            boardDAO.getConnection().rollback();
             throw e;
         }
     }

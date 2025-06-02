@@ -4,21 +4,28 @@ import edu.dio.CardBoard.dto.BoardDetailsDTO;
 import edu.dio.CardBoard.persistence.dao.BoardColumnDAO;
 import edu.dio.CardBoard.persistence.dao.BoardDAO;
 import edu.dio.CardBoard.persistence.entity.BoardEntity;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
-@AllArgsConstructor
+@Component
 public class BoardQueryService {
 
-    private final Connection connection;
+    private final BoardDAO boardDAO;
+    private final BoardColumnDAO boardColumnDAO;
+
+
+    @Autowired
+    public BoardQueryService(BoardDAO dao, BoardColumnDAO boardColumnDAO) {
+        this.boardDAO = dao;
+        this.boardColumnDAO = boardColumnDAO;
+    }
+
 
     public Optional<BoardEntity> findById(final Long id) throws SQLException {
-        var dao = new BoardDAO(connection);
-        var boardColumnDAO = new BoardColumnDAO(connection);
-        var optional = dao.findById(id);
+        var optional = boardDAO.findById(id);
         if (optional.isPresent()){
             var entity = optional.get();
             entity.setBoardColumns(boardColumnDAO.findByBoardId(entity.getId()));
@@ -28,9 +35,7 @@ public class BoardQueryService {
     }
 
     public Optional<BoardDetailsDTO> showBoardDetails(final Long id) throws SQLException {
-        var dao = new BoardDAO(connection);
-        var boardColumnDAO = new BoardColumnDAO(connection);
-        var optional = dao.findById(id);
+        var optional = boardDAO.findById(id);
         if (optional.isPresent()){
             var entity = optional.get();
             var columns = boardColumnDAO.findByBoardIdWithDetails(entity.getId());

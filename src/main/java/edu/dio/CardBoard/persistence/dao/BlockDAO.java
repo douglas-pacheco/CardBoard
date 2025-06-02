@@ -1,7 +1,10 @@
 package edu.dio.CardBoard.persistence.dao;
 
-import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
@@ -9,10 +12,18 @@ import java.time.OffsetDateTime;
 import static edu.dio.CardBoard.persistence.converter.OffsetDateTimeConverter.toTimestamp;
 
 
-@AllArgsConstructor
+@Component
 public class BlockDAO {
 
+    private final DataSource dataSource;
+    @Getter
     private final Connection connection;
+
+    @Autowired
+    public BlockDAO(DataSource dataSource) throws SQLException {
+        this.dataSource = dataSource;
+        this.connection = dataSource.getConnection();
+    }
 
     public void block(final String reason, final Long cardId) throws SQLException {
         var sql = "INSERT INTO BLOCKS (blocked_at, block_reason, card_id) VALUES (?, ?, ?);";
