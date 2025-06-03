@@ -2,7 +2,6 @@ package edu.dio.CardBoard.persistence.dao;
 
 import edu.dio.CardBoard.dto.CardDetailsDTO;
 import edu.dio.CardBoard.persistence.entity.CardEntity;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
