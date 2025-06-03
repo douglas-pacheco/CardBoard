@@ -2,9 +2,7 @@ package edu.dio.CardBoard.service;
 
 import edu.dio.CardBoard.persistence.dao.BoardColumnDAO;
 import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.sql.SQLException;
 import java.util.Optional;
 
