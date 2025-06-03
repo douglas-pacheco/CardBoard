@@ -5,8 +5,6 @@ import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
