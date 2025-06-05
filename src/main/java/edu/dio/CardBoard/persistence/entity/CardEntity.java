@@ -3,6 +3,7 @@ package edu.dio.CardBoard.persistence.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -20,8 +21,13 @@ public class CardEntity {
     private Long id;
     private String title;
     private String description;
+
+    @Transient
+    private Long boardId;
     @ManyToOne
     private BoardColumnEntity boardColumn ;
+
+
 
     @Override
     public final boolean equals(Object o) {

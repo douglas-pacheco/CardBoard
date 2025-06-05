@@ -17,16 +17,14 @@ import java.util.Optional;
 import static edu.dio.CardBoard.persistence.entity.BoardColumnKindEnum.findByName;
 import static java.util.Objects.isNull;
 
+@Getter
 @Component
 public class BoardColumnDAO {
 
-    private final DataSource dataSource;
-    @Getter
     private final Connection connection;
 
     @Autowired
     public BoardColumnDAO(DataSource dataSource) throws SQLException {
-        this.dataSource = dataSource;
         this.connection = dataSource.getConnection();
     }
 
@@ -69,8 +67,9 @@ public class BoardColumnDAO {
         var sql =
                 """
                 SELECT bc.id,
-                       bc.name,
-                       bc.kind,
+                        bc.name,
+                        bc.order,
+                        bc.kind,
                        (SELECT COUNT(c.id)
                                FROM CARDS c
                               WHERE c.board_column_id = bc.id) cards_amount
@@ -84,9 +83,10 @@ public class BoardColumnDAO {
             var resultSet = statement.getResultSet();
             while (resultSet.next()){
                 var dto = new BoardColumnDTO(
-                        resultSet.getLong("bc.id"),
-                        resultSet.getString("bc.name"),
-                        findByName(resultSet.getString("bc.kind"))
+                        resultSet.getLong("id"),
+                        resultSet.getString("name"),
+                        resultSet.getInt("order"),
+                        findByName(resultSet.getString("kind"))
                         );
                 dtos.add(dto);
             }
@@ -129,6 +129,41 @@ public class BoardColumnDAO {
             }
             return Optional.empty();
         }
+    }
+
+
+
+    public List<BoardColumnEntity> findBoardColumnsByBoardId(final Long boardId) throws Exception {
+        var sql =
+                """
+                SELECT bc.name,
+                       bc.kind,
+                       b.id,
+                       b.name
+                  FROM board_column_entity bc
+                  LEFT JOIN board_entity b
+                    ON b.id = bc.board_id
+                 WHERE b.id = ?;
+                """;
+        List<BoardColumnEntity> entities = new ArrayList<>();
+        try(var statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, boardId);
+            statement.executeQuery();
+            var resultSet = statement.getResultSet();
+            if (resultSet.next()) {
+                do {
+                    var entity = new BoardColumnEntity();
+                    entity.setName(resultSet.getString("bc.name"));
+                    entity.setKind(findByName(resultSet.getString("bc.kind")));
+                    entities.add(entity);
+                } while (resultSet.next());
+                return entities;
+            }
+        }
+        catch(SQLException e) {
+            throw new Exception("Error fetching board columns for board with id: " + boardId, e);
+        }
+        return entities;
     }
 
 }

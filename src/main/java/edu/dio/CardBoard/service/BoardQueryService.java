@@ -16,9 +16,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 @Component
 public class BoardQueryService {
@@ -36,7 +33,7 @@ public class BoardQueryService {
     }
 
 
-    public Optional<BoardDetailsDTO> findById(final Long id)  {
+    public Optional<BoardDetailsDTO> findByIdFetchingRelationships(final Long id) throws Exception {
         Optional<BoardEntity> optional;
         Optional<BoardDetailsDTO> optionalDTO;
         try {
@@ -46,14 +43,14 @@ public class BoardQueryService {
                 List<BoardColumnEntity> columnsByBoardId = boardColumnDAO.findByBoardId(entity.getId());
                 List<BoardColumnDTO> columnsDTO = columnsByBoardId
                         .stream().map(
-                        column -> new BoardColumnDTO(column.getId(), column.getName(), column.getKind()))
+                        column -> new BoardColumnDTO(column.getId(), column.getName(), column.getOrder(), column.getKind()))
                         .toList();
                 BoardDetailsDTO boardDetailsDTO = new BoardDetailsDTO(entity.getId(), entity.getName(), columnsDTO, new HashMap<>());
                 optionalDTO = Optional.of(boardDetailsDTO);
                 for (BoardColumnEntity column : columnsByBoardId) {
                     List<CardEntity> cards = cardDAO.findAllByColumn(column);
                     List<CardDetailsDTO> cardDetails = cards.stream()
-                                .map(card -> new CardDetailsDTO(card.getId(), card.getTitle(), card.getDescription()))
+                                .map(card -> new CardDetailsDTO(card.getId(), card.getTitle(), card.getDescription(), id))
                                 .toList();
                     boardDetailsDTO.cards().put(column.getId(), cardDetails);
                 }
@@ -61,19 +58,30 @@ public class BoardQueryService {
             }
             return Optional.empty();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new Exception(e);
         }
     }
 
-//    public Optional<BoardDetailsDTO> showBoardDetails(final Long id) throws SQLException {
-//        var optional = boardDAO.findById(id);
-//        if (optional.isPresent()){
-//            var entity = optional.get();
-//            var columns = boardColumnDAO.findByBoardIdWithDetails(entity.getId());
-//            var dto = new BoardDetailsDTO(entity.getId(), entity.getName(), columns);
-//            return Optional.of(dto);
-//        }
-//        return Optional.empty();
-//    }
+    public Optional<BoardDetailsDTO> findBoardByIdFetchingBlocks(final Long id) throws Exception {
+        var optional = boardDAO.findById(id);
+        if (optional.isPresent()){
+            var entity = optional.get();
+            var columns = boardColumnDAO.findByBoardIdWithDetails(entity.getId());
+            var dto = new BoardDetailsDTO(entity.getId(), entity.getName(), columns, null);
+            return Optional.of(dto);
+        }
+        return Optional.empty();
+    }
 
+    public List<BoardColumnDTO> findColumnsByBoardId(Long id) throws Exception {
+
+        try {
+            List<BoardColumnDTO> columns;
+            columns = boardColumnDAO.findByBoardIdWithDetails(id);
+            return columns;
+        } catch (SQLException e) {
+            throw new Exception("Error fetching columns for board with id: " + id, e);
+        }
+
+    }
 }

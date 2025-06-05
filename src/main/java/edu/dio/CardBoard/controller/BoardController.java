@@ -106,7 +106,7 @@ public class BoardController {
     @GetMapping("/select")
     public String findBoard(@RequestParam("boardId") Long boardId, RedirectAttributes redirectAttributes) {
         try {
-            Optional<BoardDetailsDTO> optionalBoard = boardQueryService.findById(boardId);
+            Optional<BoardDetailsDTO> optionalBoard = boardQueryService.findByIdFetchingRelationships(boardId);
 
             if (optionalBoard.isPresent()) {
                 BoardDetailsDTO foundBoard = optionalBoard.get();

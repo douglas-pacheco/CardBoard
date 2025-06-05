@@ -19,7 +19,7 @@ public class CardQueryService {
         this.cardDAO = dao;
     }
 
-    public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
+    public Optional<CardDetailsDTO> findById(final Long id) throws Exception {
         return cardDAO.findById(id);
     }
 

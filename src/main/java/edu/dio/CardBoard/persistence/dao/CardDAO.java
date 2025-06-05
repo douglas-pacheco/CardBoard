@@ -62,6 +62,7 @@ public class CardDAO {
                        b.block_reason,
                        c.board_column_id,
                        bc.name,
+                       bc.board_id,
                        (SELECT COUNT(sub_b.id)
                                FROM block_entity sub_b
                               WHERE sub_b.card_id = c.id) blocks_amount
@@ -87,7 +88,9 @@ public class CardDAO {
                         resultSet.getString("b.block_reason"),
                         resultSet.getInt("blocks_amount"),
                         resultSet.getLong("c.board_column_id"),
-                        resultSet.getString("bc.name")
+                        resultSet.getString("bc.name"),
+                        resultSet.getLong("bc.board_id")
+
                 );
                 return Optional.of(dto);
             }
@@ -117,6 +120,7 @@ public class CardDAO {
                 var dto = new CardEntity(resultSet.getLong("id"),
                                         resultSet.getString("title"),
                                         resultSet.getString("description"),
+                                        resultSet.getLong("board_id"),
                                         column);
                 cards.add(dto);
             }
