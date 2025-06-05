@@ -17,16 +17,14 @@ import java.util.Optional;
 import static edu.dio.CardBoard.persistence.converter.OffsetDateTimeConverter.toOffsetDateTime;
 import static java.util.Objects.nonNull;
 
+@Getter
 @Component
 public class CardDAO {
 
-    private final DataSource dataSource;
-    @Getter
     private final Connection connection;
 
     @Autowired
     public CardDAO(DataSource dataSource) throws SQLException {
-        this.dataSource = dataSource;
         this.connection = dataSource.getConnection();
     }
 

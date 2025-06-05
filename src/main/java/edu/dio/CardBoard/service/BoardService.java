@@ -21,7 +21,7 @@ public class BoardService {
 
 
     @Autowired
-    public BoardService(BoardDAO dao, BoardColumnDAO boardColumnDAO, BoardQueryService boardQueryService) {
+    public BoardService(BoardDAO dao, BoardColumnDAO boardColumnDAO) {
         this.boardDAO = dao;
         this.boardColumnDAO = boardColumnDAO;
     }

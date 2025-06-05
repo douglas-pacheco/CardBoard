@@ -79,11 +79,11 @@ public class BoardController {
             }
 
             // Create Final Column
-            BoardColumnEntity finalColumn = createColumn(boardCreationDTO.getFinalColumnName(), FINAL, currentOrder++);
+            BoardColumnEntity finalColumn = createColumn(boardCreationDTO.getFinalColumnName(), FINAL, currentOrder);
             columns.add(finalColumn);
 
             // Create Cancellation Column
-            BoardColumnEntity cancelColumn = createColumn(boardCreationDTO.getCancelColumnName(), CANCEL, currentOrder++);
+            BoardColumnEntity cancelColumn = createColumn(boardCreationDTO.getCancelColumnName(), CANCEL, currentOrder);
             columns.add(cancelColumn);
 
             boardEntity.setBoardColumns(columns);
@@ -104,7 +104,7 @@ public class BoardController {
 
 
     @GetMapping("/select")
-    public String findBoard(@RequestParam("boardId") Long boardId, RedirectAttributes redirectAttributes) {
+    public String findBoard(@RequestParam("boardId") Long boardId, RedirectAttributes redirectAttributes) throws Exception {
         try {
             Optional<BoardDetailsDTO> optionalBoard = boardQueryService.findByIdFetchingRelationships(boardId);
 

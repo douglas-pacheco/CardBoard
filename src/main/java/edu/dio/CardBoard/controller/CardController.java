@@ -21,7 +21,7 @@ public class CardController {
     private final CardQueryService cardQueryService;
 
     @Autowired
-    public CardController(CardService cardService, CardQueryService cardQueryService, BoardQueryService boardQueryService) {
+    public CardController(CardService cardService, CardQueryService cardQueryService) {
         this.cardService = cardService;
         this.cardQueryService = cardQueryService;
     }
