@@ -34,7 +34,7 @@ public class CardController {
     public String createCard(@RequestBody CardDetailsDTO cardDTO) throws Exception { // @RequestBody binds JSON/form data to DTO
 
         cardService.create(cardDTO);
-        return "";
+        return "card-details-view";
 
     }
 
@@ -46,7 +46,7 @@ public class CardController {
     public String moveCardToNextColumn(@PathVariable Long cardId) throws Exception {
 
             cardService.moveToNextColumn(cardId);
-            return "";
+            return "card-details-view";
 
     }
 
@@ -61,7 +61,7 @@ public class CardController {
 
 
             cardService.block(cardId, cardDTO.blockReason());
-            return "";
+            return "card-details-view";
 
     }
 
@@ -74,7 +74,7 @@ public class CardController {
     public String unblockCard(@PathVariable Long cardId, @RequestBody CardDetailsDTO cardDTO) throws Exception { // reason is optional in request body
             String reason = (cardDTO != null) ? cardDTO.blockReason() : null;
             cardService.unblock(cardId, reason);
-            return "";
+            return "card-details-view";
 
     }
 
@@ -86,7 +86,7 @@ public class CardController {
     public String cancelCard(@PathVariable Long cardId) throws Exception {
 
             cardService.cancel(cardId);
-            return "";
+            return "card-details-view";
 
     }
 
