@@ -1,9 +1,6 @@
 package edu.dio.CardBoard.persistence.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -21,6 +18,8 @@ public class BoardColumnEntity {
     private Long id;
     private String name;
     private int order;
+
+    @Enumerated(EnumType.STRING)
     private BoardColumnKindEnum kind;
 
     @ManyToOne

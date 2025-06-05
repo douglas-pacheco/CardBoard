@@ -1,6 +1,7 @@
 package edu.dio.CardBoard.persistence.dao;
 
 import edu.dio.CardBoard.dto.CardDetailsDTO;
+import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
 import edu.dio.CardBoard.persistence.entity.CardEntity;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static edu.dio.CardBoard.persistence.converter.OffsetDateTimeConverter.toOffsetDateTime;
@@ -28,7 +31,7 @@ public class CardDAO {
     }
 
     public CardEntity insert(final CardEntity entity) throws SQLException {
-        var sql = "INSERT INTO CARDS (title, description, board_column_id) values (?, ?, ?);";
+        var sql = "INSERT INTO card_entity (title, description, board_column_id) values (?, ?, ?);";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
             statement.setString(i ++, entity.getTitle());
@@ -40,7 +43,7 @@ public class CardDAO {
     }
 
     public void moveToColumn(final Long columnId, final Long cardId) throws SQLException{
-        var sql = "UPDATE CARDS SET board_column_id = ? WHERE id = ?;";
+        var sql = "UPDATE card_entity SET board_column_id = ? WHERE id = ?;";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
             statement.setLong(i ++, columnId);
@@ -60,13 +63,13 @@ public class CardDAO {
                        c.board_column_id,
                        bc.name,
                        (SELECT COUNT(sub_b.id)
-                               FROM BLOCKS sub_b
+                               FROM block_entity sub_b
                               WHERE sub_b.card_id = c.id) blocks_amount
-                  FROM CARDS c
-                  LEFT JOIN BLOCKS b
+                  FROM card_entity c
+                  LEFT JOIN block_entity b
                     ON c.id = b.card_id
                    AND b.unblocked_at IS NULL
-                 INNER JOIN BOARDS_COLUMNS bc
+                 INNER JOIN board_column_entity bc
                     ON bc.id = c.board_column_id
                   WHERE c.id = ?;
                 """;
@@ -90,6 +93,36 @@ public class CardDAO {
             }
         }
         return Optional.empty();
+    }
+
+
+
+    public List<CardEntity> findAllByColumn(final BoardColumnEntity column) throws SQLException {
+        var sql =
+                """
+                SELECT c.id,
+                       c.title,
+                       c.description,
+                       c.board_column_id
+                  FROM card_entity c
+                  WHERE c.board_column_id = ?;
+                """;
+        List<CardEntity> cards = new ArrayList<>();
+        try(var statement = connection.prepareStatement(sql)){
+            statement.setLong(1, column.getId());
+            statement.executeQuery();
+            var resultSet = statement.getResultSet();
+            while (resultSet.next()){
+
+                var dto = new CardEntity(resultSet.getLong("id"),
+                                        resultSet.getString("title"),
+                                        resultSet.getString("description"),
+                                        column);
+                cards.add(dto);
+            }
+            return cards;
+
+        }
     }
 
 }

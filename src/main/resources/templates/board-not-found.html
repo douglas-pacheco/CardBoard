@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Not Found</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 600px; margin: 50px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #dc3545; margin-bottom: 20px; }
+        p { margin-bottom: 20px; }
+        .back-link { display: block; text-align: center; margin-top: 20px; }
+        a { text-decoration: none; color: #007bff; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Error: Board Not Found</h1>
+    <!-- Display the error message passed via RedirectAttributes -->
+    <p th:if="${errorMessage}" th:text="${errorMessage}" class="error-message"></p>
+    <p th:unless="${errorMessage}">The board you were looking for could not be found.</p>
+    <p class="back-link"><a th:href="@{/mainmenu}">Back to Main Menu</a></p>
+</div>
+</body>
+</html>

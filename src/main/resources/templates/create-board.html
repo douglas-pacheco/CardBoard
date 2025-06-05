@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Board</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 700px; margin: 50px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #0056b3; text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            margin-right: 10px; /* Space out buttons */
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .remove-button {
+            background-color: #dc3545;
+            margin-left: 10px;
+            padding: 6px 10px;
+            font-size: 0.9em;
+        }
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+        .back-link { display: block; text-align: center; margin-top: 20px; }
+        .error-message { color: red; font-size: 0.9em; margin-top: 5px; }
+        .success-message { color: green; font-size: 1.1em; margin-top: 10px; text-align: center; }
+        .pending-column-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .pending-column-item input {
+            flex-grow: 1; /* Allow input to take available space */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Create New Board</h1>
+
+    <div th:if="${successMessage}" class="success-message">
+        <p th:text="${successMessage}"></p>
+    </div>
+    <div th:if="${errorMessage}" class="error-message">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <form th:action="@{/boards/save}" th:object="${boardCreationDTO}" method="post">
+        <div class="form-group">
+            <label for="boardName">Board Name:</label>
+            <input type="text" id="boardName" th:field="*{boardName}" required />
+            <p th:if="${#fields.hasErrors('boardName')}" th:errors="*{boardName}" class="error-message"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="initialColumnName">Initial Column Name:</label>
+            <input type="text" id="initialColumnName" th:field="*{initialColumnName}" required />
+            <p th:if="${#fields.hasErrors('initialColumnName')}" th:errors="*{initialColumnName}" class="error-message"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="finalColumnName">Final Column Name:</label>
+            <input type="text" id="finalColumnName" th:field="*{finalColumnName}" required />
+            <p th:if="${#fields.hasErrors('finalColumnName')}" th:errors="*{finalColumnName}" class="error-message"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="cancelColumnName">Cancellation Column Name:</label>
+            <input type="text" id="cancelColumnName" th:field="*{cancelColumnName}" required />
+            <p th:if="${#fields.hasErrors('cancelColumnName')}" th:errors="*{cancelColumnName}" class="error-message"></p>
+        </div>
+
+        <div id="pending-columns-container">
+            <label>Additional Pending Columns:</label>
+            <div th:each="name, stat : *{pendingColumnNames}" class="form-group pending-column-item">
+                <label th:for="${'pendingColumnName' + stat.index}" th:text="${'Pending Column ' + (stat.index + 1) + ' Name:'}"></label>
+                <input type="text" th:id="${'pendingColumnName' + stat.index}" th:name="${'pendingColumnNames[' + stat.index + ']'}" th:value="${name}" required />
+                <button type="button" class="remove-button" onclick="removePendingColumn(this)">Remove</button>
+                <p th:if="${#fields.hasErrors('pendingColumnNames[' + stat.index + ']')}" th:errors="${'pendingColumnNames[' + stat.index + ']'}" class="error-message"></p>
+            </div>
+        </div>
+
+        <button type="button" id="addPendingColumnBtn">Add Pending Column</button>
+
+        <button type="submit">Create Board</button>
+    </form>
+
+    <p class="back-link"><a th:href="@{/mainmenu}">Back to Main Menu</a></p>
+</div>
+
+<script th:inline="javascript">
+    // Get references to the container and the add button
+    const pendingColumnsContainer = document.getElementById('pending-columns-container');
+    const addPendingColumnBtn = document.getElementById('addPendingColumnBtn');
+
+    // Initialize the index for new pending columns.
+    // If there are existing columns due to a validation error, start from their count.
+    let pendingColumnIndex = /*[[${boardCreationDTO.pendingColumnNames.size()}]]*/ 0;
+
+    /**
+     * Function to add a new pending column input field.
+     */
+    function addPendingColumn() {
+        // Create a new div to hold the label, input, and remove button
+        const newColumnDiv = document.createElement('div');
+        newColumnDiv.className = 'form-group pending-column-item'; // Apply styles
+
+        // Create label
+        const label = document.createElement('label');
+        label.htmlFor = 'pendingColumnName' + pendingColumnIndex;
+        label.textContent = 'Pending Column ' + (pendingColumnIndex + 1) + ' Name:';
+
+        // Create input field
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'pendingColumnName' + pendingColumnIndex;
+        // IMPORTANT: The name attribute must follow Spring's list binding convention
+        input.name = 'pendingColumnNames[' + pendingColumnIndex + ']';
+        input.required = true; // Make it required
+
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-button';
+        removeBtn.textContent = 'Remove';
+        removeBtn.onclick = function() {
+            removePendingColumn(this);
+        };
+
+        // Append elements to the new div
+        newColumnDiv.appendChild(label);
+        newColumnDiv.appendChild(input);
+        newColumnDiv.appendChild(removeBtn);
+
+        // Append the new div to the container
+        pendingColumnsContainer.appendChild(newColumnDiv);
+
+        // Increment the index for the next new column
+        pendingColumnIndex++;
+    }
+
+    /**
+     * Function to remove a pending column input field.
+     * @param {HTMLElement} button The remove button that was clicked.
+     */
+    function removePendingColumn(button) {
+        // The parent of the button is the 'pending-column-item' div
+        const columnItemDiv = button.parentNode;
+        pendingColumnsContainer.removeChild(columnItemDiv);
+
+        // Optional: Re-index the remaining fields if you want sequential numbering
+        // This makes the display pretty but isn't strictly necessary for Spring binding
+        // as Spring uses the actual indices submitted. If gaps occur, Spring just fills them.
+        updateColumnIndexes();
+    }
+
+    /**
+     * Updates the labels and names of remaining pending column fields after removal.
+     */
+    function updateColumnIndexes() {
+        const items = pendingColumnsContainer.querySelectorAll('.pending-column-item');
+        pendingColumnIndex = 0; // Reset index for re-indexing
+        items.forEach((item, i) => {
+            const label = item.querySelector('label');
+            const input = item.querySelector('input');
+
+            label.htmlFor = 'pendingColumnName' + i;
+            label.textContent = 'Pending Column ' + (i + 1) + ' Name:';
+            input.id = 'pendingColumnName' + i;
+            input.name = 'pendingColumnNames[' + i + ']'; // Update the name attribute
+            pendingColumnIndex++; // Update the global counter
+        });
+    }
+
+    // Initialize existing columns if the page reloads due to validation errors
+    // The th:each block in HTML already handles the rendering for existing ones.
+    // This JS ensures the 'pendingColumnIndex' correctly reflects the number of existing fields.
+    document.addEventListener('DOMContentLoaded', () => {
+        const existingItems = pendingColumnsContainer.querySelectorAll('.pending-column-item');
+        pendingColumnIndex = existingItems.length; // Set starting index based on rendered items
+    });
+
+
+    // Add event listener to the "Add Pending Column" button
+    addPendingColumnBtn.addEventListener('click', addPendingColumn);
+
+    // Display validation errors for initial load/post-validation errors if any
+    // The th:if/th:errors directly in HTML handle this.
+</script>
+</body>
+</html>

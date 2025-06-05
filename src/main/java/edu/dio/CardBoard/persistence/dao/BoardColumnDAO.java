@@ -33,7 +33,7 @@ public class BoardColumnDAO {
 
 
     public BoardColumnEntity insert(final BoardColumnEntity entity) throws SQLException {
-        var sql = "INSERT INTO BOARDS_COLUMNS (name, `order`, kind, board_id) VALUES (?, ?, ?, ?);";
+        var sql = "INSERT INTO board_column_entity (name, `order`, kind, board_id) VALUES (?, ?, ?, ?);";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
             statement.setString(i ++, entity.getName());
@@ -47,7 +47,7 @@ public class BoardColumnDAO {
 
     public List<BoardColumnEntity> findByBoardId(final Long boardId) throws SQLException{
         List<BoardColumnEntity> entities = new ArrayList<>();
-        var sql = "SELECT id, name, `order`, kind FROM BOARDS_COLUMNS WHERE board_id = ? ORDER BY `order`";
+        var sql = "SELECT id, name, columnorder, kind FROM board_column_entity WHERE board_id = ? ORDER BY columnorder";
         try(var statement = connection.prepareStatement(sql)){
             statement.setLong(1, boardId);
             statement.executeQuery();
@@ -56,7 +56,7 @@ public class BoardColumnDAO {
                 var entity = new BoardColumnEntity();
                 entity.setId(resultSet.getLong("id"));
                 entity.setName(resultSet.getString("name"));
-                entity.setOrder(resultSet.getInt("order"));
+                entity.setOrder(resultSet.getInt("columnorder"));
                 entity.setKind(findByName(resultSet.getString("kind")));
                 entities.add(entity);
             }
@@ -74,7 +74,7 @@ public class BoardColumnDAO {
                        (SELECT COUNT(c.id)
                                FROM CARDS c
                               WHERE c.board_column_id = bc.id) cards_amount
-                  FROM BOARDS_COLUMNS bc
+                  FROM board_column_entity bc
                  WHERE board_id = ?
                  ORDER BY `order`;
                 """;
@@ -86,9 +86,8 @@ public class BoardColumnDAO {
                 var dto = new BoardColumnDTO(
                         resultSet.getLong("bc.id"),
                         resultSet.getString("bc.name"),
-                        findByName(resultSet.getString("bc.kind")),
-                        resultSet.getInt("cards_amount")
-                );
+                        findByName(resultSet.getString("bc.kind"))
+                        );
                 dtos.add(dto);
             }
             return dtos;
@@ -103,8 +102,8 @@ public class BoardColumnDAO {
                c.id,
                c.title,
                c.description
-          FROM BOARDS_COLUMNS bc
-          LEFT JOIN CARDS c
+          FROM board_column_entity bc
+          LEFT JOIN card_entity c
             ON c.board_column_id = bc.id
          WHERE bc.id = ?;
         """;
