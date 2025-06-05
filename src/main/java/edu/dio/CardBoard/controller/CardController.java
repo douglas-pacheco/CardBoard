@@ -3,7 +3,6 @@ package edu.dio.CardBoard.controller;
 
 
 import edu.dio.CardBoard.dto.CardDetailsDTO;
-import edu.dio.CardBoard.service.BoardQueryService;
 import edu.dio.CardBoard.service.CardQueryService;
 import edu.dio.CardBoard.service.CardService;
 import org.springframework.beans.factory.annotation.Autowired;
