@@ -53,24 +53,24 @@ public class CardDAO {
     public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
         var sql =
                 """
-                SELECT c.id,
-                       c.title,
-                       c.description,
-                       b.blocked_at,
-                       b.block_reason,
-                       c.board_column_id,
+                SELECT card.id,
+                       card.title,
+                       card.description,
+                       block.blocked_at,
+                       block.block_reason,
+                       card.board_column_id,
                        bc.name,
                        bc.board_id,
-                       (SELECT COUNT(sub_b.id)
-                               FROM block_entity sub_b
-                              WHERE sub_b.card_id = c.id) blocks_amount
-                  FROM card_entity c
-                  LEFT JOIN block_entity b
-                    ON c.id = b.card_id
-                   AND b.unblocked_at IS NULL
+                       (SELECT COUNT(sub_block.id)
+                               FROM block_entity sub_block
+                              WHERE sub_block.card_id = card.id) blocks_amount
+                  FROM card_entity card
+                  LEFT JOIN block_entity block
+                    ON card.id = block.card_id
+                   AND block.unblocked_at IS NULL
                  INNER JOIN board_column_entity bc
-                    ON bc.id = c.board_column_id
-                  WHERE c.id = ?;
+                    ON bc.id = card.board_column_id
+                  WHERE card.id = ?;
                 """;
         try(var statement = connection.prepareStatement(sql)){
             statement.setLong(1, id);
@@ -78,16 +78,16 @@ public class CardDAO {
             var resultSet = statement.getResultSet();
             if (resultSet.next()){
                 var dto = new CardDetailsDTO(
-                        resultSet.getLong("c.id"),
-                        resultSet.getString("c.title"),
-                        resultSet.getString("c.description"),
-                        nonNull(resultSet.getString("b.block_reason")),
-                        toOffsetDateTime(resultSet.getTimestamp("b.blocked_at")),
-                        resultSet.getString("b.block_reason"),
+                        resultSet.getLong("id"),
+                        resultSet.getString("title"),
+                        resultSet.getString("description"),
+                        nonNull(resultSet.getString("block_reason")),
+                        toOffsetDateTime(resultSet.getTimestamp("blocked_at")),
+                        resultSet.getString("block_reason"),
                         resultSet.getInt("blocks_amount"),
-                        resultSet.getLong("c.board_column_id"),
-                        resultSet.getString("bc.name"),
-                        resultSet.getLong("bc.board_id")
+                        resultSet.getLong("board_column_id"),
+                        resultSet.getString("name"),
+                        resultSet.getLong("board_id")
 
                 );
                 return Optional.of(dto);
@@ -118,7 +118,7 @@ public class CardDAO {
                 var dto = new CardEntity(resultSet.getLong("id"),
                                         resultSet.getString("title"),
                                         resultSet.getString("description"),
-                                        resultSet.getLong("board_id"),
+                                        column.getBoard().getId(),
                                         column);
                 cards.add(dto);
             }

@@ -134,7 +134,6 @@
         const input = document.createElement('input');
         input.type = 'text';
         input.id = 'pendingColumnName' + pendingColumnIndex;
-        // IMPORTANT: The name attribute must follow Spring's list binding convention
         input.name = 'pendingColumnNames[' + pendingColumnIndex + ']';
         input.required = true; // Make it required
 
@@ -166,11 +165,7 @@
     function removePendingColumn(button) {
         // The parent of the button is the 'pending-column-item' div
         const columnItemDiv = button.parentNode;
-        pendingColumnsContainer.removeChild(columnItemDiv);
-
-        // Optional: Re-index the remaining fields if you want sequential numbering
-        // This makes the display pretty but isn't strictly necessary for Spring binding
-        // as Spring uses the actual indices submitted. If gaps occur, Spring just fills them.
+        pendingColumnsContainer.removeChild(columnItemDiv
         updateColumnIndexes();
     }
 

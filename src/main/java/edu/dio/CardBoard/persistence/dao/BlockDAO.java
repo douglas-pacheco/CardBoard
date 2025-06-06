@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 
 import static edu.dio.CardBoard.persistence.converter.OffsetDateTimeConverter.toTimestamp;
@@ -25,14 +26,19 @@ public class BlockDAO {
         this.connection = dataSource.getConnection();
     }
 
-    public void block(final String reason, final Long cardId) throws SQLException {
+    public OffsetDateTime block(final String reason, final Long cardId) throws SQLException {
         var sql = "INSERT INTO block_entity (blocked_at, block_reason, card_id) VALUES (?, ?, ?);";
+        Timestamp blockTimestamp = toTimestamp(OffsetDateTime.now());
+        assert blockTimestamp != null;
+        OffsetDateTime blockOffsetDateTime= blockTimestamp.toInstant().atOffset(OffsetDateTime.now().getOffset());
+
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
-            statement.setTimestamp(i ++, toTimestamp(OffsetDateTime.now()));
+            statement.setTimestamp(i ++, blockTimestamp);
             statement.setString(i ++, reason);
             statement.setLong(i, cardId);
             statement.executeUpdate();
+            return blockOffsetDateTime;
         }
     }
 

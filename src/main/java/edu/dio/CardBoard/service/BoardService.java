@@ -88,4 +88,13 @@ public class BoardService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No initial column found for the board"));
     }
+
+
+    public BoardColumnEntity createColumn(final String name, final BoardColumnKindEnum kind, final int order) {
+        BoardColumnEntity boardColumn = new BoardColumnEntity();
+        boardColumn.setName(name);
+        boardColumn.setKind(kind);
+        boardColumn.setColumnorder(order);
+        return boardColumn;
+    }
 }

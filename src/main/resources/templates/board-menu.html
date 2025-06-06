@@ -37,23 +37,12 @@
         li {
             margin-bottom: 15px;
         }
-        a {
-            display: block;
-            padding: 12px 15px;
-            background-color: #4CAF50; /* Green color for options */
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-            text-align: center;
-            font-size: 1.1em;
-        }
-        a:hover {
-            background-color: #45a049;
-        }
+
         .back-option a {
             background-color: #6c757d; /* Grey for "Go Back" */
         }
+        .back-link { display: block; text-align: center; margin-top: 20px; }
+
         .back-option a:hover {
             background-color: #5a6268;
         }
@@ -116,24 +105,26 @@
         <div th:if="${selectedBoard != null and not #lists.isEmpty(selectedBoard.columns)}">
             <table>
                 <thead>
-                <tr>
-                    <th th:each="column : ${selectedBoard.columns}" th:text="${column.name}">Column Name</th>
-                </tr>
+                    <tr>
+                        <th th:each="column : ${selectedBoard.columns}" th:text="${column.name}">Column Name</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr th:each="i : ${#numbers.sequence(0, maxCardCount - 1)}">
-                    <td th:each="column : ${selectedBoard.columns}">
-                        <th:block th:with="cardsForColumn=${selectedBoard.cards() != null ? selectedBoard.cards().get(column.id) : null}">
-                            <div th:if="${cardsForColumn != null and cardsForColumn.size() > i}" class="card-item">
-                                <span th:if="${cardsForColumn[__${i}__] != null}" th:text="${cardsForColumn[__${i}__].title}">Card Title</span>
-                                <span th:unless="${cardsForColumn[__${i}__] != null}" class="null-card-placeholder">Null Card</span>
-                            </div>
-                            <div th:unless="${cardsForColumn != null and cardsForColumn.size() > i}" class="empty-cell">
-                                -
-                            </div>
-                        </th:block>
-                    </td>
-                </tr>
+                    <tr th:each="i : ${#numbers.sequence(0, maxCardCount - 1)}">
+                        <td th:each="column : ${selectedBoard.columns}">
+                            <th:block th:with="cardsForColumn=${selectedBoard.cards() != null ? selectedBoard.cards().get(column.id) : null}">
+                                <div th:if="${cardsForColumn != null and cardsForColumn.size() > i}" class="card-item">
+                                    <a th:if="${cardsForColumn[__${i}__] != null}"
+                                       th:href="@{/cards/{id}/view(id=${cardsForColumn[__${i}__].id})}"
+                                       th:text="${cardsForColumn[__${i}__].title}">Card Title</a>
+                                    <span th:unless="${cardsForColumn[__${i}__] != null}" class="null-card-placeholder">Null Card</span>
+                                </div>
+                                <div th:unless="${cardsForColumn != null and cardsForColumn.size() > i}" class="empty-cell">
+                                    -
+                                </div>
+                            </th:block>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -142,13 +133,10 @@
         </div>
 
     <ul>
-        <li><a th:href="@{'/boards/' + ${selectedBoardId} + '/createcard'}">1 - Create a card</a></li>
-        <li><a th:href="@{'/boards/' + ${selectedBoardId} + '/movecard'}">2 - Move a card</a></li>
-        <li><a th:href="@{'/boards/' + ${selectedBoardId} + '/blockcard'}">3 - Block a card</a></li>
-        <li><a th:href="@{'/boards/' + ${selectedBoardId} + '/unblockcard'}">4 - Unblock a card</a></li>
-        <li><a th:href="@{'/boards/' + ${selectedBoardId} + '/cancelcard'}">5 - Cancel a card</a></li>
-        <li class="back-option"><a th:href="@{/mainmenu}">Go back to previous menu</a></li>
+        <li><a th:href="@{'/boards/' + ${selectedBoardId} + '/createcard'}">Create a card</a></li>
+        <p class="back-link"><a th:href="@{/mainmenu}">Back to Main Menu</a></p>
     </ul>
 </div>
+
 </body>
 </html>

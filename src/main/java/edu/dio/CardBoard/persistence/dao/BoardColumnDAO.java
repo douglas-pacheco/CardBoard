@@ -28,11 +28,11 @@ public class BoardColumnDAO {
 
 
     public BoardColumnEntity insert(final BoardColumnEntity entity) throws SQLException {
-        var sql = "INSERT INTO board_column_entity (name, `order`, kind, board_id) VALUES (?, ?, ?, ?);";
+        var sql = "INSERT INTO board_column_entity (name, columnorder, kind, board_id) VALUES (?, ?, ?, ?);";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
             statement.setString(i ++, entity.getName());
-            statement.setInt(i ++, entity.getOrder());
+            statement.setInt(i ++, entity.getColumnorder());
             statement.setString(i ++, entity.getKind().name());
             statement.setLong(i, entity.getBoard().getId());
             statement.executeUpdate();
@@ -51,7 +51,7 @@ public class BoardColumnDAO {
                 var entity = new BoardColumnEntity();
                 entity.setId(resultSet.getLong("id"));
                 entity.setName(resultSet.getString("name"));
-                entity.setOrder(resultSet.getInt("columnorder"));
+                entity.setColumnorder(resultSet.getInt("columnorder"));
                 entity.setKind(findByName(resultSet.getString("kind")));
                 entities.add(entity);
             }
@@ -65,14 +65,14 @@ public class BoardColumnDAO {
                 """
                 SELECT bc.id,
                         bc.name,
-                        bc.order,
+                        bc.columnorder,
                         bc.kind,
                        (SELECT COUNT(c.id)
-                               FROM CARDS c
+                               FROM card_entity c
                               WHERE c.board_column_id = bc.id) cards_amount
                   FROM board_column_entity bc
                  WHERE board_id = ?
-                 ORDER BY `order`;
+                 ORDER BY columnorder;
                 """;
         try(var statement = connection.prepareStatement(sql)){
             statement.setLong(1, boardId);
@@ -82,7 +82,7 @@ public class BoardColumnDAO {
                 var dto = new BoardColumnDTO(
                         resultSet.getLong("id"),
                         resultSet.getString("name"),
-                        resultSet.getInt("order"),
+                        resultSet.getInt("columnorder"),
                         findByName(resultSet.getString("kind"))
                         );
                 dtos.add(dto);

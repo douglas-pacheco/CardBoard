@@ -4,14 +4,13 @@ package edu.dio.CardBoard.controller;
 import edu.dio.CardBoard.dto.BoardCreationDTO;
 import edu.dio.CardBoard.dto.BoardDetailsDTO;
 import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
-import edu.dio.CardBoard.persistence.entity.BoardColumnKindEnum;
 import edu.dio.CardBoard.persistence.entity.BoardEntity;
 import edu.dio.CardBoard.service.BoardQueryService;
 import edu.dio.CardBoard.service.BoardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model; // To pass data to the view
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -57,7 +56,7 @@ public class BoardController {
         // Check for validation errors
         if (bindingResult.hasErrors()) {
             // If there are errors, return to the form view to display them
-            return "boards/create-board";
+            return "create-board";
         }
 
         try {
@@ -69,21 +68,21 @@ public class BoardController {
             int currentOrder = 0; // Keep track of column order
 
             // Create Initial Column
-            BoardColumnEntity initialColumn = createColumn(boardCreationDTO.getInitialColumnName(), INITIAL, currentOrder++);
+            BoardColumnEntity initialColumn = boardService.createColumn(boardCreationDTO.getInitialColumnName(), INITIAL, currentOrder++);
             columns.add(initialColumn);
 
             // Create Additional Pending Columns from the list
             for (String pendingColumnName : boardCreationDTO.getPendingColumnNames()) {
-                BoardColumnEntity pendingColumn = createColumn(pendingColumnName, PENDING, currentOrder++);
+                BoardColumnEntity pendingColumn = boardService.createColumn(pendingColumnName, PENDING, currentOrder++);
                 columns.add(pendingColumn);
             }
 
             // Create Final Column
-            BoardColumnEntity finalColumn = createColumn(boardCreationDTO.getFinalColumnName(), FINAL, currentOrder);
+            BoardColumnEntity finalColumn = boardService.createColumn(boardCreationDTO.getFinalColumnName(), FINAL, currentOrder);
             columns.add(finalColumn);
 
             // Create Cancellation Column
-            BoardColumnEntity cancelColumn = createColumn(boardCreationDTO.getCancelColumnName(), CANCEL, currentOrder);
+            BoardColumnEntity cancelColumn = boardService.createColumn(boardCreationDTO.getCancelColumnName(), CANCEL, currentOrder);
             columns.add(cancelColumn);
 
             boardEntity.setBoardColumns(columns);
@@ -91,11 +90,8 @@ public class BoardController {
             boardService.insert(boardEntity);
             redirectAttributes.addFlashAttribute("successMessage", "Board '" + boardCreationDTO.getBoardName() + "' created successfully!");
 
-        } catch (SQLException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Database error creating board: " + ex.getMessage());
-            return "redirect:/boards/create";
-        } catch (RuntimeException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Application error creating board: " + ex.getMessage());
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error creating board: " + ex.getMessage());
             return "redirect:/boards/create";
         }
 
@@ -117,20 +113,20 @@ public class BoardController {
             } else {
                 // If board is not found, redirect to a specific view with an error message
                 redirectAttributes.addFlashAttribute("errorMessage", "No board with ID " + boardId + " was found.");
-                return "redirect:/board-not-found"; // Redirect to the 'board not found' page
+                return "board-not-found"; // Redirect to the 'board not found' page
             }
 
         }
         catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", "Database error while trying to find board: " + ex.getMessage());
-            return "redirect:/boards/board-not-found"; // Redirect to the 'board not found' page on DB error
+            return "board-not-found"; // Redirect to the 'board not found' page on DB error
         }
     }
 
 
     @GetMapping("/delete")
     public String showDeleteBoardForm() {
-        return "boards/delete-board"; // Returns the template name located at src/main/resources/templates/boards/delete-board.html
+        return "delete-board"; // Returns the template name located at src/main/resources/templates/boards/delete-board.html
     }
 
     @PostMapping("/perform-delete")
@@ -154,18 +150,5 @@ public class BoardController {
         return "redirect:/mainmenu"; // Redirect back to the main menu with a message
     }
 
-
-
-    /**
-     * Helper method to create a BoardColumnEntity.
-     * In a full application, this logic might be in a service or factory.
-     */
-    private BoardColumnEntity createColumn(final String name, final BoardColumnKindEnum kind, final int order) {
-        BoardColumnEntity boardColumn = new BoardColumnEntity();
-        boardColumn.setName(name);
-        boardColumn.setKind(kind);
-        boardColumn.setOrder(order);
-        return boardColumn;
-    }
 
 }

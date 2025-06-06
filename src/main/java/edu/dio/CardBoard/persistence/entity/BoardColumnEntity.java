@@ -15,9 +15,10 @@ import java.util.Objects;
 public class BoardColumnEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private int order;
+    private Integer columnorder;
 
     @Enumerated(EnumType.STRING)
     private BoardColumnKindEnum kind;

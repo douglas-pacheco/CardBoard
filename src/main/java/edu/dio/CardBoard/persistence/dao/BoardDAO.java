@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Optional;
 
 @Component
@@ -25,11 +26,17 @@ public class BoardDAO {
 
     public BoardEntity insert(final BoardEntity entity) throws SQLException {
         var sql = "INSERT INTO board_entity (name) values (?);";
-        try(var statement = connection.prepareStatement(sql)){
+        try(var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             statement.setString(1, entity.getName());
             statement.executeUpdate();
-        }
+            var generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                entity.setId(generatedKeys.getLong(1));
+            } else {
+                throw new SQLException("Creating board failed, no ID obtained.");
+            }
         return entity;
+           }
     }
 
     public void delete(final Long id) throws SQLException {

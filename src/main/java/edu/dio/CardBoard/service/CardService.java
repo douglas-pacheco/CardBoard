@@ -12,8 +12,10 @@ import edu.dio.CardBoard.persistence.entity.BoardColumnEntity;
 import edu.dio.CardBoard.persistence.entity.CardEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +61,25 @@ public class CardService {
         }
     }
 
-    public void moveToNextColumn(final Long cardId) throws Exception {
+
+    public CardDetailsDTO createReturnDTO(final CardDetailsDTO request) throws Exception {
+        CardEntity entity = create(request);
+
+        CardDetailsDTO cardDTO = new CardDetailsDTO(entity.getId(),
+                                                    entity.getTitle(),
+                                                    entity.getDescription(),
+                                                    null, // blocked
+                                                    null, // blockedAt
+                                                    null, // blockReason
+                                                    0, // blocksAmount
+                                                    entity.getBoardColumn().getId(),
+                                                    entity.getBoardColumn().getName(),
+                                                    entity.getBoardColumn().getBoard().getId()
+                                                    );
+        return cardDTO;
+    }
+
+    public CardDetailsDTO moveToNextColumn(final Long cardId) throws Exception {
         try{
             Optional<CardDetailsDTO> optional = cardDAO.findById(cardId);
             CardDetailsDTO dto = optional.orElseThrow(
@@ -86,16 +106,29 @@ public class CardService {
 
             cardDAO.moveToColumn(nextColumn.id(), cardId);
             cardDAO.getConnection().commit();
+
+            CardDetailsDTO updatedCard = new CardDetailsDTO(dto.id(),
+                                                            dto.title(),
+                                                            dto.description(),
+                                                            dto.blocked(),
+                                                            dto.blockedAt(),
+                                                            dto.blockReason(),
+                                                            dto.blocksAmount(),
+                                                            nextColumn.id(),
+                                                            nextColumn.name(),
+                                                            dto.boardId());
+            return updatedCard;
+
         }catch (SQLException ex){
             cardDAO.getConnection().rollback();
             throw new Exception("Error while moving card with id %s to next column".formatted(cardId));
         }
     }
 
-    public void cancel(final Long cardId) throws Exception{
+    public CardDetailsDTO cancel(final Long cardId) throws Exception{
         try{
-            var optional = cardDAO.findById(cardId);
-            var dto = optional.orElseThrow(
+            Optional<CardDetailsDTO> optional = cardDAO.findById(cardId);
+            CardDetailsDTO dto = optional.orElseThrow(
                     () -> new EntityNotFoundException("Card with id %s was not found".formatted(cardId))
             );
             if (dto.blocked()){
@@ -113,24 +146,40 @@ public class CardService {
 
             checkForFinishedCard(currentColumn);
 
-            Long cancelColumnId = boardColumnsInfo.stream()
+            BoardColumnDTO cancelColumnDTO = boardColumnsInfo.stream()
                     .filter(bc -> bc.kind().equals(CANCEL))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("There is no cancel column in the board"))
-                    .id();
+                    .orElseThrow(() -> new IllegalStateException("There is no cancel column in the board"));
+
+            Long cancelColumnId = cancelColumnDTO.id();
             cardDAO.moveToColumn(cancelColumnId, cardId);
             cardDAO.getConnection().commit();
+
+            CardDetailsDTO updatedCard = new CardDetailsDTO(dto.id(),
+                                                            dto.title(),
+                                                            dto.description(),
+                                                            dto.blocked(),
+                                                            dto.blockedAt(),
+                                                            dto.blockReason(),
+                                                            dto.blocksAmount(),
+                                                            cancelColumnDTO.id(),
+                                                            cancelColumnDTO.name(),
+                                                            dto.boardId());
+            return updatedCard;
         }catch (SQLException ex){
             cardDAO.getConnection().rollback();
             throw new Exception("Error while canceling card with id %s".formatted(cardId), ex);
         }
+
+
+
     }
 
 
-    public void block(final Long id, final String reason) throws Exception {
+    public CardDetailsDTO block(final Long id, final @RequestParam("reason") String reason) throws Exception {
         try{
-            var optional = cardDAO.findById(id);
-            var cardDetailsDTO = optional.orElseThrow(
+            Optional<CardDetailsDTO> optional = cardDAO.findById(id);
+            CardDetailsDTO cardDetailsDTO = optional.orElseThrow(
                     () -> new EntityNotFoundException("Card with id %s was not found".formatted(id))
             );
             if (cardDetailsDTO.blocked()){
@@ -146,9 +195,22 @@ public class CardService {
                         .formatted(currentColumn.kind());
                 throw new IllegalStateException(message);
             }
-            blockDAO.block(reason, id);
+            OffsetDateTime blockTimeStamp = blockDAO.block(reason, id);
             cardDAO.getConnection().commit();
             blockDAO.getConnection().commit();
+
+            CardDetailsDTO updatedCard = new CardDetailsDTO(cardDetailsDTO.id(),
+                    cardDetailsDTO.title(),
+                    cardDetailsDTO.description(),
+                    true,
+                    blockTimeStamp,
+                    reason,
+                    cardDetailsDTO.blocksAmount()+1,
+                    currentColumn.id(),
+                    currentColumn.name(),
+                    cardDetailsDTO.boardId());
+            return updatedCard;
+
         }catch (SQLException ex) {
             cardDAO.getConnection().rollback();
             blockDAO.getConnection().rollback();
@@ -156,10 +218,10 @@ public class CardService {
         }
     }
 
-    public void unblock(final Long id, final String reason) throws Exception {
+    public CardDetailsDTO unblock(final Long id, final @RequestParam("reason") String reason) throws Exception {
         try{
-            var optional = cardDAO.findById(id);
-            var dto = optional.orElseThrow(
+            Optional<CardDetailsDTO> optional = cardDAO.findById(id);
+            CardDetailsDTO dto = optional.orElseThrow(
                     () -> new EntityNotFoundException("Card with id %s was not found".formatted(id))
             );
             if (!dto.blocked()){
@@ -170,6 +232,17 @@ public class CardService {
             blockDAO.getConnection().commit();
             cardDAO.getConnection().commit();
 
+            CardDetailsDTO updatedCard = new CardDetailsDTO(dto.id(),
+                    dto.title(),
+                    dto.description(),
+                    false,
+                    null, // blockedAt
+                    dto.blockReason(),
+                    dto.blocksAmount(),
+                    dto.columnId(),
+                    dto.columnName(),
+                    dto.boardId());
+            return updatedCard;
         }catch (SQLException ex) {
             blockDAO.getConnection().rollback();
             cardDAO.getConnection().rollback();

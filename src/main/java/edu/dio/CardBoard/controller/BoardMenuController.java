@@ -30,9 +30,8 @@ public class BoardMenuController {
         maxCardCount = cardsByColumn.stream()
                 .filter(Objects::nonNull)
                 .mapToInt(List::size)
-                .max()
-                .orElse(1);
-        model.addAttribute("maxCardCount", maxCardCount);
+                .max().orElse(1);
+        model.addAttribute("maxCardCount", maxCardCount > 0 ? maxCardCount : 1);
 
 
         return "board-menu";

@@ -43,11 +43,12 @@ public class BoardQueryService {
                 List<BoardColumnEntity> columnsByBoardId = boardColumnDAO.findByBoardId(entity.getId());
                 List<BoardColumnDTO> columnsDTO = columnsByBoardId
                         .stream().map(
-                        column -> new BoardColumnDTO(column.getId(), column.getName(), column.getOrder(), column.getKind()))
+                        column -> new BoardColumnDTO(column.getId(), column.getName(), column.getColumnorder(), column.getKind()))
                         .toList();
                 BoardDetailsDTO boardDetailsDTO = new BoardDetailsDTO(entity.getId(), entity.getName(), columnsDTO, new HashMap<>());
                 optionalDTO = Optional.of(boardDetailsDTO);
                 for (BoardColumnEntity column : columnsByBoardId) {
+                    column.setBoard(entity);
                     List<CardEntity> cards = cardDAO.findAllByColumn(column);
                     List<CardDetailsDTO> cardDetails = cards.stream()
                                 .map(card -> new CardDetailsDTO(card.getId(), card.getTitle(), card.getDescription(), id))

@@ -30,10 +30,11 @@ public class CardController {
      * @param cardDTO DTO containing the card's title and description.
      * @return The name of the Thymeleaf template (`card-details-view`).
      */
-    @PostMapping
-    public String createCard(@RequestBody CardDetailsDTO cardDTO) throws Exception { // @RequestBody binds JSON/form data to DTO
+    @PostMapping("/create/")
+    public String createCard(@RequestBody CardDetailsDTO cardDTO, Model model) throws Exception { // @RequestBody binds JSON/form data to DTO
 
-        cardService.create(cardDTO);
+        CardDetailsDTO returnDTO = cardService.createReturnDTO(cardDTO);
+        model.addAttribute("cardDetails", returnDTO); // Add the updated card DTO to the model
         return "card-details-view";
 
     }
@@ -43,38 +44,38 @@ public class CardController {
      * @return The name of the Thymeleaf template (`card-details-view`).
      */
     @PostMapping("/{cardId}/move-next")
-    public String moveCardToNextColumn(@PathVariable Long cardId) throws Exception {
+    public String moveCardToNextColumn(@PathVariable Long cardId, Model model) throws Exception {
 
-            cardService.moveToNextColumn(cardId);
-            return "card-details-view";
+        CardDetailsDTO returnDTO = cardService.moveToNextColumn(cardId);
+        model.addAttribute("cardDetails", returnDTO); // Add the updated card DTO to the model
+        return "card-details-view";
 
     }
 
     /**
      * @param cardId The ID of the card to block.
-     * @param cardDTO DTO containing the reason for blocking.
+     * @param reason DTO containing the reason for blocking.
      * @return The name of the Thymeleaf template (`card-details-view`).
      */
     @PostMapping("/{cardId}/block")
-    public String blockCard(@PathVariable Long cardId, @RequestBody CardDetailsDTO cardDTO) throws Exception {
+    public String blockCard(@PathVariable Long cardId, @RequestParam("reason") final String reason, Model model) throws Exception {
 
-
-
-            cardService.block(cardId, cardDTO.blockReason());
-            return "card-details-view";
+        CardDetailsDTO returnDTO = cardService.block(cardId, reason);
+        model.addAttribute("cardDetails", returnDTO); // Add the updated card DTO to the model
+        return "card-details-view";
 
     }
 
     /**
      * @param cardId The ID of the card to unblock.
-     * @param cardDTO DTO containing the reason for unblocking (optional).
+     * @param reason DTO containing the reason for unblocking (optional).
      * @return The name of the Thymeleaf template (`card-details-view`).
      */
     @PostMapping("/{cardId}/unblock")
-    public String unblockCard(@PathVariable Long cardId, @RequestBody CardDetailsDTO cardDTO) throws Exception { // reason is optional in request body
-            String reason = (cardDTO != null) ? cardDTO.blockReason() : null;
-            cardService.unblock(cardId, reason);
-            return "card-details-view";
+    public String unblockCard(@PathVariable Long cardId, @RequestParam("reason") final String reason, Model model) throws Exception { // reason is optional in request body
+        CardDetailsDTO returnDTO = cardService.unblock(cardId, reason);
+        model.addAttribute("cardDetails", returnDTO); // Add the updated card DTO to the model
+        return "card-details-view";
 
     }
 
@@ -83,11 +84,16 @@ public class CardController {
      * @return The name of the Thymeleaf template (`card-details-view`).
      */
     @PostMapping("/{cardId}/cancel")
-    public String cancelCard(@PathVariable Long cardId) throws Exception {
+    public String cancelCard(@PathVariable Long cardId, Model model) throws Exception {
+        try {
+            CardDetailsDTO returnDTO = cardService.cancel(cardId);
+            model.addAttribute("cardDetails", returnDTO); // Add the updated card DTO to the model
+        }
+        catch(IllegalStateException e) {
+            model.addAttribute("errorMessage", e.getMessage()); // Add error message to model if card cannot be cancelled
+        }
 
-            cardService.cancel(cardId);
-            return "card-details-view";
-
+        return "card-details-view";
     }
 
     /**
