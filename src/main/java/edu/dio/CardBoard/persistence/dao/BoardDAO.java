@@ -11,11 +11,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 
+@Getter
 @Component
 public class BoardDAO {
 
-    private final DataSource dataSource;
-    @Getter
     private final Connection connection;
 
     @Autowired

@@ -26,7 +26,7 @@ public class BoardMenuController {
         Collection<List<CardDetailsDTO>> cardsByColumn = forwardedBoard.cards().values();
 
         // Calculate maxCardCount for the table rows in the template
-        int maxCardCount = 0;
+        int maxCardCount;
         maxCardCount = cardsByColumn.stream()
                 .filter(Objects::nonNull)
                 .mapToInt(List::size)

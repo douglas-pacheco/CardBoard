@@ -65,7 +65,8 @@ public class CardService {
     public CardDetailsDTO createReturnDTO(final CardDetailsDTO request) throws Exception {
         CardEntity entity = create(request);
 
-        CardDetailsDTO cardDTO = new CardDetailsDTO(entity.getId(),
+        CardDetailsDTO cardDTO;
+        cardDTO = new CardDetailsDTO(entity.getId(),
                                                     entity.getTitle(),
                                                     entity.getDescription(),
                                                     null, // blocked
@@ -107,7 +108,8 @@ public class CardService {
             cardDAO.moveToColumn(nextColumn.id(), cardId);
             cardDAO.getConnection().commit();
 
-            CardDetailsDTO updatedCard = new CardDetailsDTO(dto.id(),
+            CardDetailsDTO updatedCard;
+            updatedCard = new CardDetailsDTO(dto.id(),
                                                             dto.title(),
                                                             dto.description(),
                                                             dto.blocked(),

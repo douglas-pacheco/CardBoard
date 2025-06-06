@@ -13,11 +13,10 @@ import java.time.OffsetDateTime;
 import static edu.dio.CardBoard.persistence.converter.OffsetDateTimeConverter.toTimestamp;
 
 
+@Getter
 @Component
 public class BlockDAO {
 
-    private final DataSource dataSource;
-    @Getter
     private final Connection connection;
 
     @Autowired
